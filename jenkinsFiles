@@ -9,7 +9,7 @@ pipeline {
   }
         stage('build') {
             steps {
-      sh "sudo apt update"
+    
                 sh "mvn clean package"
             }
 }
