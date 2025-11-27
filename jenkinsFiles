@@ -1,0 +1,10 @@
+pipeline {
+    agent any
+    stages {
+        stage('checkout') {
+            steps {
+                sh "git clone https://github.com/ManasaMarigowda/hello-world-war"
+            }
+        }
+    }
+}
