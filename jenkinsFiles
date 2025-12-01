@@ -1,21 +1,40 @@
 pipeline {
-    agent { label 'slave1' }
-    stages {
-        stage('checkout') {
+agent none
+	parameters {
+string(name: 'mcmd1', defaultValue: 'clean', description: 'maven clean command')
+booleanParam(name: 'SAMPLE_BOOLEAN', defaultValue: true, description: 'A boolean parameter')
+choice(name: 'mcmd2', choices: ['package', 'compile', 'install','validate'], description: 'Choose one option')
+}
+stages { 
+    stage ('hello-world-war') {
+        parallel {
+        stage('Checkout') {
+		agent { label 'Java' }
             steps {
-              sh "rm -rf hello-world-war "
-                sh "git clone https://github.com/ManasaMarigowda/hello-world-war"
+            withCredentials([
+              usernamePassword(credentialsId: '1f8ce1e0-0695-4624-a57e-e5b56069facd',
+                               usernameVariable: 'USERNAME',
+                               passwordVariable: 'PASSWORD'),
+              sshUserPrivateKey(credentialsId: 'dd7947c0-f955-4655-b724-ec296f292352',
+                                keyFileVariable: 'KEY_FILE',
+                                usernameVariable: 'SSH_USER')
+            ]) {
+				sh "rm -rf hello-world-war"
+               sh "git clone https://github.com/ManasaMarigowda/hello-world-war"
             }
-  }
+        }
+		}
         stage('build') {
             steps {
     
                 sh "mvn clean package"
             }
 }
+
+
    stage('Depoly') {
             steps {
-           sh "sudo cp /home/slave1/workspace/hello_world_war/target/hello-world-war-1.0.0.war /opt/apache-tomcat-10.1.49/webapps"
+           sh "sudo cp /home/slave1/workspace/hello_world_war/target/hello-world-war-1.0.0.war /opt/apache-tomcat-9.0.11/webapps"
         }
     }
 }
