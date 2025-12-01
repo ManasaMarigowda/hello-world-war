@@ -1,6 +1,6 @@
 pipeline {
    // agent { label 'Java' }
- agent { label 'Java' }
+ agent none
 	parameters {
 string(name: 'mcmd1', defaultValue: 'clean', description: 'maven clean command')
 booleanParam(name: 'SAMPLE_BOOLEAN', defaultValue: true, description: 'A boolean parameter')
@@ -10,13 +10,13 @@ stages {
     stage ('hello-world-war') {
         parallel {
         stage('Checkout') {
-		agent none
+		agent { label 'Java' }
 steps {
             withCredentials([
               usernamePassword(credentialsId: '1f8ce1e0-0695-4624-a57e-e5b56069facd',
                                usernameVariable: 'USERNAME',
                                passwordVariable: 'PASSWORD'),
-              sshUserPrivateKey(credentialsId: 'b6bfc174-b510-405e-810f-79b569cd0a83',
+              sshUserPrivateKey(credentialsId: 'dd7947c0-f955-4655-b724-ec296f292352',
                                 keyFileVariable: 'KEY_FILE',
                                 usernameVariable: 'SSH_USER')
             ]) {
