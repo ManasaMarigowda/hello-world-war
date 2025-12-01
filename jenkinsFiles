@@ -35,7 +35,7 @@ steps {
 	 agent { label 'Java' }
             steps {
                 sh "sudo cp /home/slave1/workspace/hello_world_war/target/hello-world-war-1.0.0.war /opt/apache-tomcat-10.1.49/webapps"
-                sh "./opt/apache-tomcat-10.1.49/bin/startup.sh"
+                sh "sudo /opt/apache-tomcat-10.1.49/bin/startup.sh"
                            }
         }
     }
