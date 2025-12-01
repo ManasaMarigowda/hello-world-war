@@ -1,6 +1,6 @@
 pipeline {
    // agent { label 'Java' }
-agent none
+ agent { label 'Java' }
 	parameters {
 string(name: 'mcmd1', defaultValue: 'clean', description: 'maven clean command')
 booleanParam(name: 'SAMPLE_BOOLEAN', defaultValue: true, description: 'A boolean parameter')
@@ -26,13 +26,13 @@ steps {
         }
 		}
         stage('Build') {
-agent none
+ agent { label 'Java' }
             steps {
                 sh "mvn $mcmd1 $mcmd2"
               }
         }
         stage('Deploy') {
-		agent none
+	 agent { label 'Java' }
             steps {
                 sh "sudo cp /home/slave1/workspace/job_hello_word_jenkin/target/hello-world-war-1.0.0.war /opt/apache-tomcat-9.0.112/webapps"
                            }
