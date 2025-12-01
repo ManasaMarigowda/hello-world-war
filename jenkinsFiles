@@ -10,8 +10,8 @@ stages {
     stage ('hello-world-war') {
         parallel {
         stage('Checkout') {
-		agent { label 'Java' }
-            steps {
+		agent none
+steps {
             withCredentials([
               usernamePassword(credentialsId: '1f8ce1e0-0695-4624-a57e-e5b56069facd',
                                usernameVariable: 'USERNAME',
@@ -26,13 +26,13 @@ stages {
         }
 		}
         stage('Build') {
-		agent { label 'Java' }
+agent none
             steps {
                 sh "mvn $mcmd1 $mcmd2"
               }
         }
         stage('Deploy') {
-		agent { label 'Java' }
+		agent none
             steps {
                 sh "sudo cp /home/slave1/workspace/job_hello_word_jenkin/target/hello-world-war-1.0.0.war /opt/apache-tomcat-9.0.112/webapps"
                            }
