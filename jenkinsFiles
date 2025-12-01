@@ -13,10 +13,10 @@ stages {
 		agent { label 'Java' }
 steps {
             withCredentials([
-              usernamePassword(credentialsId: '1f8ce1e0-0695-4624-a57e-e5b56069facd',
+              usernamePassword(credentialsId: 'dd7947c0-f955-4655-b724-ec296f292352',
                                usernameVariable: 'USERNAME',
                                passwordVariable: 'PASSWORD'),
-              sshUserPrivateKey(credentialsId: 'dd7947c0-f955-4655-b724-ec296f292352',
+              sshUserPrivateKey(credentialsId: '1f8ce1e0-0695-4624-a57e-e5b56069facd',
                                 keyFileVariable: 'KEY_FILE',
                                 usernameVariable: 'SSH_USER')
             ]) {
