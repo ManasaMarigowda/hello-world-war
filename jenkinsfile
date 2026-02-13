@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'master',
-                    url: 'https://github.com/yashusn/hello-world-war.git'
+                    url: 'https://github.com/ManasaMarigowda/hello-world-war.git'
             }
         }
 
