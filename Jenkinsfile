@@ -17,23 +17,7 @@ pipeline {
         }
 
  
-        stage('Install Docker') {
-            steps {
-                sh '''
-                    # Install docker only if not installed
-                    if ! command -v docker >/dev/null 2>&1; then
-                        echo "Installing Docker..."
-                        sudo apt update
-                        sudo apt install docker.io -y
-                        sudo systemctl start docker
-                        sudo systemctl enable docker
-                        sudo usermod -aG docker jenkins
-                    else
-                        echo "Docker already installed"
-                    fi
-                '''
-            }
-        }
+      
 
         
         stage('Build') {
