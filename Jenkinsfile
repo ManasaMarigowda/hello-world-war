@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-  docker {
+   {
       image 'docker:27.1-cli' // or a custom image with docker + bash + needed tools
       args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
     }
