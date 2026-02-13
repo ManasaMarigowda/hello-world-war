@@ -2,7 +2,7 @@ pipeline {
     agent { label 'docker' }
 
     environment {
-        IMAGE_NAME = "yashusn/tomcat-app"
+        IMAGE_NAME = "manasamarigowda/tomcat"
         IMAGE_TAG  = "${BUILD_NUMBER}"
         CONTAINER_NAME = "tomcat-app"
     }
@@ -27,7 +27,7 @@ pipeline {
         stage('Publish') {
             steps {
                 script {
-                    docker.withRegistry('', '4c2699fc-9b3b-4212-8405-f82be29c610c') {
+                    docker.withRegistry('', 'docker-key') {
                         app.push("${IMAGE_TAG}")
                         app.push("latest")
                     }
