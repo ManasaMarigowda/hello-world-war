@@ -1,13 +1,7 @@
 pipeline {
     agent any
 
-   {
-      image 'docker:27.1-cli' // or a custom image with docker + bash + needed tools
-      args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
-    }
-  
-
-    environment {
+     environment {
         IMAGE_NAME = "manasamarigowda/tomcat"
         IMAGE_TAG  = "${BUILD_NUMBER}"
         CONTAINER_NAME = "tomcat-app"
@@ -22,6 +16,26 @@ pipeline {
             }
         }
 
+ 
+        stage('Install Docker') {
+            steps {
+                sh '''
+                    # Install docker only if not installed
+                    if ! command -v docker >/dev/null 2>&1; then
+                        echo "Installing Docker..."
+                        sudo apt update
+                        sudo apt install docker.io -y
+                        sudo systemctl start docker
+                        sudo systemctl enable docker
+                        sudo usermod -aG docker jenkins
+                    else
+                        echo "Docker already installed"
+                    fi
+                '''
+            }
+        }
+
+        
         stage('Build') {
             steps {
                 script {
