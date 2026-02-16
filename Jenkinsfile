@@ -1,65 +1,59 @@
 pipeline {
     agent {
-        docker {
+		docker {
             image 'docker:latest'
             args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
         }
-    }
-          
+	}
+
     environment {
-        IMAGE_NAME   = "manasamarigowda/hello-world-war"
-        IMAGE_TAG    = "${BUILD_NUMBER}"
-        DOCKER_CREDS = "docker-key"
-        CONTAINER_NAME = "hello-world-war-container"
-        HOME = "${WORKSPACE}"
+        IMAGE_NAME = "manasamarigowda/tomcatv1"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
+        CONTAINER_NAME = "tomcat-app"
+		HOME = "${WORKSPACE}"
     }
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
+	        stage('Checkout') {
+           steps {
                 git branch: 'master',
                     url: 'https://github.com/ManasaMarigowda/hello-world-war.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-            }
-        }
-
-        stage('Login to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: DOCKER_CREDS,
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                script {
+                    app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
 
-        stage('Push Image to Docker Hub') {
+        stage('Publish') {
             steps {
-                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                script {
+                    docker.withRegistry('', 'docker-key') {
+                        app.push("${IMAGE_TAG}")
+                        app.push("latest")
+                    }
+                }
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy') {
             steps {
-                sh '''
-                    # Stop and remove existing container if it exists
+                sh """
+                    docker pull ${IMAGE_NAME}:latest
+
                     docker stop ${CONTAINER_NAME} || true
                     docker rm ${CONTAINER_NAME} || true
 
-                    # Run container in detached mode
                     docker run -d \
                       --name ${CONTAINER_NAME} \
-                      -p 9090:8080 \
-                      ${IMAGE_NAME}:${IMAGE_TAG}
-                '''
+                      -p 8088:8080 \
+                      ${IMAGE_NAME}:latest
+                """
             }
         }
     }
