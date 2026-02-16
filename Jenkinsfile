@@ -7,9 +7,9 @@ pipeline {
 	}
 
     environment {
-        IMAGE_NAME = "manasamarigowda/tomcatv1"
+        IMAGE_NAME = "manasamarigowda/tomcat"
         IMAGE_TAG  = "${BUILD_NUMBER}"
-        CONTAINER_NAME = "tomcatv1"
+        CONTAINER_NAME = "tomcat"
 		HOME = "${WORKSPACE}"
     }
 
