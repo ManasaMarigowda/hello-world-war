@@ -15,7 +15,7 @@ pipeline {
 
         stage('Checkout Source Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/username/hello-world-app.git'
+                git branch: 'main', url: 'https://github.com/ManasaMarigowda/hello-world-app.git'
             }
         }
 
