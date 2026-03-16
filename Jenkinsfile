@@ -1,73 +1,58 @@
 pipeline {
-    agent any
+    agent {
+		docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
+        }
+	}
 
     environment {
-        REGISTRY = "docker.io/dockerhub-username"
-        IMAGE_NAME = "hello-world"
-        TAG = "${BUILD_NUMBER}"
-        HELM_CHART = "hello-chart"
-        JFROG_REPO = "https://jfrog.example.com/artifactory/helm"
-        RELEASE_NAME = "hello-release"
-        NAMESPACE = "default"
+        IMAGE_NAME = "manasamarigowda/tomcat"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
+        CONTAINER_NAME = "tomcat"
+		HOME = "${WORKSPACE}"
     }
 
     stages {
 
-        stage('Checkout Source Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/ManasaMarigowda/hello-world-app.git'
+	        stage('Checkout') {
+           steps {
+                git branch: 'master',
+                    url: 'https://github.com/ManasaMarigowda/hello-world-war.git'
             }
         }
 
-        stage('Build Docker Image & Helm Package') {
+        stage('Build') {
             steps {
                 script {
-
-                    sh """
-                    docker build -t $REGISTRY/$IMAGE_NAME:$TAG app/
-                    """
-
-                    sh """
-                    helm package helm/$HELM_CHART
-                    """
+                    app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
 
-        stage('Push Image to Registry & Chart to JFrog') {
+        stage('Publish') {
             steps {
-                withCredentials([usernamePassword(
-                        credentialsId: 'docker-creds',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS')]) {
-
-                    sh """
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $REGISTRY/$IMAGE_NAME:$TAG
-                    """
+                script {
+                    docker.withRegistry('', 'docker-key') {
+                        app.push("${IMAGE_TAG}")
+                        app.push("latest")
+                    }
                 }
-
-                sh """
-                curl -u user:password \
-                -T $HELM_CHART-*.tgz \
-                $JFROG_REPO/
-                """
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy') {
             steps {
-
                 sh """
-                helm repo add jfrog $JFROG_REPO
-                helm repo update
-                """
+                    docker pull ${IMAGE_NAME}:latest
 
-                sh """
-                helm upgrade --install $RELEASE_NAME jfrog/$HELM_CHART \
-                --namespace $NAMESPACE \
-                --set image.repository=$REGISTRY/$IMAGE_NAME \
-                --set image.tag=$TAG
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+
+                    docker run -d \
+                      --name ${CONTAINER_NAME} \
+                      -p 9000:8080 \
+                      ${IMAGE_NAME}:latest
                 """
             }
         }
