@@ -1,58 +1,53 @@
 pipeline {
-    agent {
-		docker {
-            image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
-        }
-	}
+    agent any
 
     environment {
         IMAGE_NAME = "manasamarigowda/tomcat"
         IMAGE_TAG  = "${BUILD_NUMBER}"
         CONTAINER_NAME = "tomcat"
-		HOME = "${WORKSPACE}"
     }
 
     stages {
 
-	        stage('Checkout') {
-           steps {
-                git branch: 'master',
-                    url: 'https://github.com/ManasaMarigowda/hello-world-war.git'
-            }
-        }
-
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                script {
-                    app = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                }
+                git branch: 'master',
+                url: 'https://github.com/ManasaMarigowda/hello-world-war.git'
             }
         }
 
-        stage('Publish') {
+        stage('Build Docker Image') {
+            steps {
+                sh """
+                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                """
+            }
+        }
+
+        stage('Push Docker Image') {
             steps {
                 script {
                     docker.withRegistry('', 'docker-key') {
-                        app.push("${IMAGE_TAG}")
-                        app.push("latest")
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy Container') {
             steps {
                 sh """
-                    docker pull ${IMAGE_NAME}:latest
+                docker pull ${IMAGE_NAME}:latest
 
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
+                docker stop ${CONTAINER_NAME} || true
+                docker rm ${CONTAINER_NAME} || true
 
-                    docker run -d \
-                      --name ${CONTAINER_NAME} \
-                      -p 9000:8080 \
-                      ${IMAGE_NAME}:latest
+                docker run -d \
+                --name ${CONTAINER_NAME} \
+                -p 9000:8080 \
+                ${IMAGE_NAME}:latest
                 """
             }
         }
